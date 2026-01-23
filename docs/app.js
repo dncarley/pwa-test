@@ -1,27 +1,61 @@
-const PICO = "http://192.168.4.1";
-const out = document.getElementById("out");
+let raceStart = 0;
+let raceRunning = false;
+let results = [];
+let lanes = 2;
 
-async function send(left, right) {
-  await fetch(`${PICO}/cmd`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ left, right })
-  });
-}
+// ---- Native Bridge ----
+window.native = window.native || {
+  openGate() {
+    window.webkit?.messageHandlers?.native?.postMessage("openGate");
+  },
+  closeGate() {
+    window.webkit?.messageHandlers?.native?.postMessage("closeGate");
+  }
+};
 
-async function poll() {
-  try {
-    const r = await fetch(`${PICO}/state`);
-    const j = await r.json();
-    out.textContent = JSON.stringify(j, null, 2);
-  } catch (e) {
-    out.textContent = "Disconnected";
+// ---- Start Race ----
+document.getElementById("start").onclick = async () => {
+  await countdown();
+  raceStart = performance.now();
+  raceRunning = true;
+  results = new Array(lanes).fill(null);
+  window.native.openGate();
+};
+
+// ---- Reset ----
+document.getElementById("reset").onclick = () => {
+  raceRunning = false;
+  window.native.closeGate();
+  resetVision();
+  updateHUD();
+};
+
+// ---- Finish Recording ----
+function recordFinish(lane) {
+  if (!raceRunning || results[lane] !== null) return;
+
+  const time = (performance.now() - raceStart) / 1000;
+  results[lane] = time;
+  updateHUD();
+
+  if (results.every(r => r !== null)) {
+    raceRunning = false;
+    saveRace();
   }
 }
 
-setInterval(poll, 100);
+// ---- Countdown ----
+async function countdown() {
+  for (let i = 3; i > 0; i--) {
+    beep();
+    await delay(1000);
+  }
+}
 
-// PWA
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function beep() {
+  new Audio("beep.wav").play().catch(() => {});
 }
