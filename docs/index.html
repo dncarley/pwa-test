@@ -1,20 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>PWA Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Races</title>
+
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <h1>Pico Control</h1>
+  <header>
+    <h1>🏁 Races</h1>
+    <div id="status">Ready</div>
+  </header>
 
-  <button onclick="send(1,1)">Forward</button>
-  <button onclick="send(-1,-1)">Reverse</button>
-  <button onclick="send(0,0)">Stop</button>
+  <main>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
 
-  <pre id="out"></pre>
+    <div id="hud">
+      <div id="timer">0.000</div>
+      <div id="lanes"></div>
 
+      <div class="controls">
+        <button id="start">START</button>
+        <button id="reset">RESET</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="vision.js"></script>
+  <script src="ui.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
